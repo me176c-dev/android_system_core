@@ -7,6 +7,10 @@
 #include "scanline.h"
 
 #include "codeflinger/CodeCache.h"
+#if defined(__i386__)
+#include "codeflinger/x86/GGLX86Assembler.h"
+#include "codeflinger/x86/X86Assembler.h"
+#else
 #include "codeflinger/GGLAssembler.h"
 #include "codeflinger/ARMAssembler.h"
 #if defined(__mips__) && !defined(__LP64__) && __mips_isa_rev < 6
@@ -15,8 +19,9 @@
 #include "codeflinger/MIPS64Assembler.h"
 #endif
 #include "codeflinger/Arm64Assembler.h"
+#endif
 
-#if defined(__arm__) || (defined(__mips__) && ((!defined(__LP64__) && __mips_isa_rev < 6) || (defined(__LP64__) && __mips_isa_rev == 6))) || defined(__aarch64__)
+#if defined(__arm__) || (defined(__mips__) && ((!defined(__LP64__) && __mips_isa_rev < 6) || (defined(__LP64__) && __mips_isa_rev == 6))) || defined(__aarch64__) || defined(__i386__)
 #   define ANDROID_ARM_CODEGEN  1
 #else
 #   define ANDROID_ARM_CODEGEN  0
@@ -66,6 +71,10 @@ static void ggl_test_codegen(uint32_t n, uint32_t p, uint32_t t0, uint32_t t1)
 
 #if defined(__aarch64__)
     GGLAssembler assembler( new ArmToArm64Assembler(a) );
+#endif
+
+#if defined(__i386__)
+    GGLX86Assembler assembler( a );
 #endif
 
     int err = assembler.scanline(needs, (context_t*)c);

@@ -29,7 +29,12 @@
 #include "scanline.h"
 
 #include "codeflinger/CodeCache.h"
+#if defined(__i386__)
+#include "codeflinger/x86/GGLX86Assembler.h"
+#include "codeflinger/x86/X86Assembler.h"
+#else
 #include "codeflinger/GGLAssembler.h"
+#endif
 #if defined(__arm__)
 #include "codeflinger/ARMAssembler.h"
 #elif defined(__aarch64__)
@@ -56,7 +61,7 @@
 #   define ANDROID_CODEGEN      ANDROID_CODEGEN_GENERATED
 #endif
 
-#if defined(__arm__) || (defined(__mips__) && ((!defined(__LP64__) && __mips_isa_rev < 6) || defined(__LP64__))) || defined(__aarch64__)
+#if defined(__arm__) || (defined(__mips__) && ((!defined(__LP64__) && __mips_isa_rev < 6) || defined(__LP64__))) || defined(__aarch64__) || defined(__i386__)
 #   define ANDROID_ARM_CODEGEN  1
 #else
 #   define ANDROID_ARM_CODEGEN  0
@@ -412,6 +417,8 @@ static void pick_scanline(context_t* c)
         GGLAssembler assembler( new ArmToMips64Assembler(a) );
 #elif defined(__aarch64__)
         GGLAssembler assembler( new ArmToArm64Assembler(a) );
+#elif defined(__i386__)
+        GGLX86Assembler assembler( a );
 #endif
         // generate the scanline code for the given needs
         bool err = assembler.scanline(c->state.needs, c) != 0;
